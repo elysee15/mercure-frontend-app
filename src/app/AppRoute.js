@@ -44,6 +44,7 @@ export default function AppRoute() {
       eventSource.close();
       console.log("[EventSource]", "La connexion a été fermée");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
