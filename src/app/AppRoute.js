@@ -4,58 +4,59 @@ import {
   Switch,
   Redirect,
 } from "react-router-dom";
-import React from "react";
-import App from "./App";
-import CreateProduct from "./CreateProduct";
-import Login from "./Login";
-import SignIn from "./SignIn";
-import { useNotificationCounter } from "../context/notification";
+import React, { Suspense } from "react";
+
+const CreateProduct = React.lazy(() => import("./CreateProduct"));
+const SignIn = React.lazy(() => import("./SignIn"));
+const App = React.lazy(() => import("./App"));
+const Login = React.lazy(() => import("./Login"));
 
 export default function AppRoute() {
-  const [userInfo] = React.useState(() => {
-    return JSON.parse(window.localStorage.getItem("__USER__"));
-  });
-  const [, setCounter] = useNotificationCounter();
-
-  const userId = userInfo._id || "";
-
-  React.useEffect(() => {
-    const url = new URL("http://localhost:8001/.well-known/mercure");
-    url.searchParams.append("topic", `ping/${userId}`);
-
-    const eventSource = new EventSource(url);
-
-    eventSource.onmessage = (e) => {
-      setCounter((value) => value + 1);
-      console.log(
-        `%c [EventSource] New message!: ${e.data}`,
-        "background: #493593; color: #bada55"
-      );
-    };
-
-    eventSource.onerror = (error) => {
-      console.error("[EventSource] ", error);
-    };
-    eventSource.onopen = (ev) => {
-      console.log("[EventSource]", "Une connexion a été ouverte");
-    };
-
-    return () => {
-      eventSource.close();
-      console.log("[EventSource]", "La connexion a été fermée");
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <>
       <Router>
         <Switch>
-          <Route path="/app" component={App} />
-          <Route path="/signin" component={SignIn} />
-          <Route path="/create" component={CreateProduct} />
-          <Route path="/" component={Login} />
-          <Redirect path="/" to="/login" />
+          <Route
+            path="/app"
+            render={() => (
+              <Suspense fallback="Chargement...">
+                <App />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/signin"
+            render={() => (
+              <Suspense fallback="Chargement...">
+                <SignIn />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/create"
+            render={() => (
+              <Suspense fallback="Chargement...">
+                <CreateProduct />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/"
+            render={() => (
+              <Suspense fallback="Chargement...">
+                <Login />
+              </Suspense>
+            )}
+          />
+          <Redirect
+            path="/"
+            to="/login"
+            render={() => (
+              <Suspense fallback="Chargement...">
+                <Login />
+              </Suspense>
+            )}
+          />
         </Switch>
       </Router>
     </>

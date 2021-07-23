@@ -43,20 +43,26 @@ function* watchOnNewEvents() {
     [localStorage, localStorage.getItem],
     "__USER__"
   );
+
   const user = yield call([JSON, JSON.parse], userInJson);
-  const eventSource = yield call(
-    createEventSourceConnection,
-    "http://localhost:8001/.well-known/mercure",
-    `ping/${user._id}`
-  );
-  const eventSourceChannel = yield call(createEventSourceChannel, eventSource);
-  while (true) {
-    try {
-      const payload = yield take(eventSourceChannel);
-      console.log("🤯🤯", payload);
-      yield put({ type: types.CREATE_PRODUCT_SUCCESS, payload });
-    } catch (e) {
-      console.error(e);
+  if (user && user._id) {
+    const eventSource = yield call(
+      createEventSourceConnection,
+      "http://localhost:8001/.well-known/mercure",
+      `ping/${user._id}`
+    );
+    const eventSourceChannel = yield call(
+      createEventSourceChannel,
+      eventSource
+    );
+    while (true) {
+      try {
+        const payload = yield take(eventSourceChannel);
+        console.log("🤯🤯", payload);
+        yield put({ type: types.CREATE_PRODUCT_SUCCESS, payload });
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 }
